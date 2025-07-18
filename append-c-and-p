@@ -1,0 +1,35 @@
+#!/bin/sh
+
+set -e
+set -u
+
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <column>" >&2
+    exit 1
+fi
+
+awk -F '\t' -v column="$1" '
+    {
+        for (i = 1; i <= NF; i++) {
+            fields[NR, i] = $i
+        }
+        num_fields[NR] = NF
+        sum += $column + 0
+    }
+    END {
+        OFS = "\t"
+        for (i = 1; i <= NR; i++) {
+            value = fields[i, column] + 0
+            cumulative_value += value
+            percentage = value / sum * 100
+            cumulative_percentage = cumulative_value / sum * 100
+            for (j = 1; j <= num_fields[i]; j++) {
+                printf "%s%s", fields[i, j], (j < num_fields[i] ? OFS : "")
+            }
+            printf "%s%s%s%.6f%s%.6f\n", \
+                OFS, cumulative_value, \
+                OFS, percentage, \
+                OFS, cumulative_percentage
+        }
+    }
+'
