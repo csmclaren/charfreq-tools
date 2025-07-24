@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -e
+set -u
+
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 <begin-pattern> <end-pattern>" >&2
+    exit 1
+fi
+
+awk -v begin="$1" -v end="$2" '
+    $0 ~ begin { found = 1; next }
+    $0 ~ end { exit }
+    found
+'
